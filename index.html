@@ -352,7 +352,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
   <div class="panel" id="panel-img2pdf">
     <div class="panel-header">
       <div class="panel-title">Image → PDF</div>
-      <div class="panel-desc">Konversi gambar JPG &amp; PNG menjadi satu file PDF. Setiap gambar jadi satu halaman.</div>
+      <div class="panel-desc">Convert JPG &amp; PNG into a PDF file. An image per page.</div>
     </div>
 
     <div class="dropzone" id="img-dz" onclick="document.getElementById('img-inp').click()">
@@ -397,25 +397,25 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 
     <div id="split-controls" style="display:none">
       <div class="form-group">
-        <label class="form-label">Mode Split</label>
+        <label class="form-label">Split Mode</label>
         <select id="split-mode" onchange="onSplitModeChange()" style="max-width:380px">
-          <option value="all">Setiap halaman → file terpisah</option>
-          <option value="range">Halaman tertentu (tentukan rentang)</option>
-          <option value="every">Setiap N halaman</option>
+          <option value="all">Each page → file splitted</option>
+          <option value="range">Specific Page (choose range)</option>
+          <option value="every">Every N page</option>
         </select>
       </div>
 
       <div id="split-range-wrap" style="display:none;margin-top:12px">
         <div class="form-group">
-          <label class="form-label">Rentang Halaman</label>
+          <label class="form-label">Page range</label>
           <input type="text" id="split-range-val" placeholder="Contoh: 1-3, 5, 8-10" style="max-width:380px">
-          <div class="form-hint">Pisahkan dengan koma. Contoh: <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface3);padding:1px 5px;border-radius:3px">1-3,5,8-10</code> → menghasilkan 3 file terpisah</div>
+          <div class="form-hint">Split with comma. Example: <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface3);padding:1px 5px;border-radius:3px">1-3,5,8-10</code> → menghasilkan 3 file terpisah</div>
         </div>
       </div>
 
       <div id="split-every-wrap" style="display:none;margin-top:12px">
         <div class="form-group">
-          <label class="form-label">Split setiap N halaman</label>
+          <label class="form-label">Split every N page</label>
           <input type="number" id="split-n-val" value="2" min="1" style="max-width:120px">
         </div>
       </div>
@@ -438,14 +438,14 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
   <div class="panel" id="panel-organize">
     <div class="panel-header">
       <div class="panel-title">Organize Pages</div>
-      <div class="panel-desc">Atur ulang urutan halaman, hapus, atau rotasi halaman PDF sesuka hati.</div>
+      <div class="panel-desc">Rearrange page order, delete, or rotate PDF pages at will.</div>
     </div>
 
     <div class="dropzone" id="org-dz" onclick="document.getElementById('org-inp').click()">
       <input type="file" id="org-inp" accept=".pdf,application/pdf" onchange="loadOrgFile(this.files[0])">
       <div class="dz-icon">🗂️</div>
-      <div class="dz-title">Klik atau seret file PDF ke sini</div>
-      <div class="dz-sub">Halaman akan tampil sebagai thumbnail yang bisa diatur</div>
+      <div class="dz-title">Drag PDF Files here</div>
+      <div class="dz-sub">The page will appear as a customizable thumbnail.</div>
     </div>
 
     <div id="org-controls" style="display:none">
@@ -458,15 +458,15 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
         <span id="org-count" style="font-size:12.5px;color:var(--text3)"></span>
       </div>
       <div class="info-box" style="margin-top:4px">
-        <strong>Cara penggunaan:</strong> Drag &amp; drop thumbnail untuk mengubah urutan •
+        <strong>How to use:</strong> Drag &amp; drop thumbnail to change order •
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle"><path d="M1 4h22M1 12h22M1 20h22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        Rotasi 90° •
+        Rotate 90° •
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle"><path d="M3 6l18 0M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Hapus halaman
+        Delete pages
       </div>
       <div id="org-loading" class="loading-area" style="display:none">
         <div class="spinner"></div>
-        Merender halaman sebagai thumbnail...
+        Rendering pages as thumbnail...
       </div>
       <div class="page-grid" id="org-grid"></div>
     </div>
@@ -484,7 +484,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 // ─── AUTH ─────────────────────────────────────────────────────────
-const USERS={agp:'agp12345',guest1:'guest1x',guest2:'guest2x'};
+const USERS={agp:'agp123',guest1:'guest1x',guest2:'guest2x',guest3:'guest3x'};
 
 function doLogin(){
   const u=document.getElementById('l-user').value.trim();
@@ -495,7 +495,7 @@ function doLogin(){
 
   err.classList.remove('show');
   if(!u||!p){
-    errMsg.textContent='Username dan password tidak boleh kosong.';
+    errMsg.textContent='Username and password cannot be empty.';
     err.classList.add('show');
     shake();return;
   }
@@ -507,7 +507,7 @@ function doLogin(){
     document.getElementById('header-user').textContent=u;
     document.getElementById('l-pass').value='';
   }else{
-    errMsg.textContent='Username atau password salah. Coba lagi.';
+    errMsg.textContent='Incorrect username or password. Please try again.';
     err.classList.add('show');
     shake();
     btn.disabled=true;
@@ -637,8 +637,8 @@ function clearMerge(){mFiles=[];renderMerge();clearStatus('merge-status');}
 async function mergePDFs(){
   if(mFiles.length<2)return;
   const btn=document.getElementById('merge-btn');
-  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Menggabungkan...';
-  setStatus('merge-status','info','<div class="spinner"></div> Menggabungkan file PDF...');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Merging...';
+  setStatus('merge-status','info','<div class="spinner"></div> Merging PDF Files...');
   try{
     const merged=await PDFDocument.create();
     for(const f of mFiles){
@@ -649,7 +649,7 @@ async function mergePDFs(){
     }
     const bytes=await merged.save();
     dl(bytes,'merged.pdf');
-    setStatus('merge-status','ok',`✓ Berhasil menggabungkan ${mFiles.length} file! File <strong>merged.pdf</strong> sedang diunduh.`);
+    setStatus('merge-status','ok',`✓ Completely merge ${mFiles.length} file! File <strong>merged.pdf</strong> is downloading.`);
   }catch(e){
     setStatus('merge-status','err','✗ Gagal: '+e.message);
   }finally{
@@ -696,8 +696,8 @@ function clearImages(){iFiles=[];renderImgs();clearStatus('img-status');}
 async function convertImages(){
   if(!iFiles.length)return;
   const btn=document.getElementById('img-btn');
-  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Mengkonversi...';
-  setStatus('img-status','info','<div class="spinner"></div> Mengkonversi gambar menjadi PDF...');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Converting...';
+  setStatus('img-status','info','<div class="spinner"></div> Converting image to PDF...');
   try{
     const doc=await PDFDocument.create();
     for(const f of iFiles){
@@ -713,9 +713,9 @@ async function convertImages(){
     }
     const bytes=await doc.save();
     dl(bytes,'images.pdf');
-    setStatus('img-status','ok',`✓ Berhasil mengkonversi ${iFiles.length} gambar menjadi PDF!`);
+    setStatus('img-status','ok',`✓ Completely convert ${iFiles.length} image to PDF!`);
   }catch(e){
-    setStatus('img-status','err','✗ Gagal: '+e.message);
+    setStatus('img-status','err','✗ Failed: '+e.message);
   }finally{
     btn.disabled=!iFiles.length;
     btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M15 2v5h5" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg> Konversi ke PDF';
@@ -737,11 +737,11 @@ async function loadSplitFile(file){
     document.getElementById('split-inp').value='';
     document.getElementById('split-file-info').style.display='block';
     document.getElementById('split-file-info').innerHTML=
-      `<div class="info-box"><strong>${file.name}</strong> — <span class="badge badge-accent">${sTotal} halaman</span> &nbsp;•&nbsp; ${fmt(file.size)}</div>`;
+      `<div class="info-box"><strong>${file.name}</strong> — <span class="badge badge-accent">${sTotal} page</span> &nbsp;•&nbsp; ${fmt(file.size)}</div>`;
     document.getElementById('split-controls').style.display='block';
     clearStatus('split-status');
     onSplitModeChange();
-  }catch(e){setStatus('split-status','err','✗ Gagal membaca PDF: '+e.message);}
+  }catch(e){setStatus('split-status','err','✗ Failed read PDF: '+e.message);}
 }
 
 function onSplitModeChange(){
@@ -762,11 +762,11 @@ function parseRanges(str){
   return str.split(',').map(s=>s.trim()).filter(Boolean).map(s=>{
     if(s.includes('-')){
       const[a,b]=s.split('-').map(Number);
-      if(isNaN(a)||isNaN(b)||a<1||b>sTotal||a>b)throw new Error(`Rentang tidak valid: "${s}"`);
+      if(isNaN(a)||isNaN(b)||a<1||b>sTotal||a>b)throw new Error(`Range is not valid: "${s}"`);
       return{from:a-1,to:b-1};
     }
     const n=Number(s);
-    if(isNaN(n)||n<1||n>sTotal)throw new Error(`Nomor halaman tidak valid: "${s}"`);
+    if(isNaN(n)||n<1||n>sTotal)throw new Error(`Page number is not valid: "${s}"`);
     return{from:n-1,to:n-1};
   });
 }
@@ -774,8 +774,8 @@ function parseRanges(str){
 async function doSplit(){
   if(!sFile)return;
   const btn=document.getElementById('split-btn');
-  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Memproses...';
-  setStatus('split-status','info','<div class="spinner"></div> Memecah PDF...');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Processing...';
+  setStatus('split-status','info','<div class="spinner"></div> Splitting PDF...');
   try{
     const ab=await sFile.arrayBuffer();
     const mode=document.getElementById('split-mode').value;
@@ -784,14 +784,14 @@ async function doSplit(){
       for(let i=0;i<sTotal;i++)ranges.push({from:i,to:i});
     }else if(mode==='range'){
       const rv=document.getElementById('split-range-val').value.trim();
-      if(!rv)throw new Error('Masukkan rentang halaman terlebih dahulu');
+      if(!rv)throw new Error('Enter page range');
       ranges=parseRanges(rv);
     }else{
       const n=parseInt(document.getElementById('split-n-val').value)||1;
       if(n<1)throw new Error('N harus ≥ 1');
       for(let i=0;i<sTotal;i+=n)ranges.push({from:i,to:Math.min(i+n-1,sTotal-1)});
     }
-    if(!ranges.length)throw new Error('Tidak ada halaman yang dipilih');
+    if(!ranges.length)throw new Error('No pages selected');
     for(let k=0;k<ranges.length;k++){
       const{from,to}=ranges[k];
       const src=await PDFDocument.load(ab);
@@ -802,9 +802,9 @@ async function doSplit(){
       dl(await out.save(),ranges.length===1?'split.pdf':`split_part${k+1}.pdf`);
       if(k<ranges.length-1)await new Promise(r=>setTimeout(r,250));
     }
-    setStatus('split-status','ok',`✓ Berhasil membuat ${ranges.length} file PDF!`);
+    setStatus('split-status','ok',`✓ Completely create ${ranges.length} file PDF!`);
   }catch(e){
-    setStatus('split-status','err','✗ Gagal: '+e.message);
+    setStatus('split-status','err','✗ Failed: '+e.message);
   }finally{
     btn.disabled=false;
     btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 8h7M3 12h7M3 16h7M14 8h7M14 12h7M14 16h7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg> Split &amp; Download';
@@ -835,14 +835,14 @@ async function loadOrgFile(file){
     await renderOrgGrid();
   }catch(e){
     document.getElementById('org-loading').style.display='none';
-    setStatus('org-status','err','✗ Gagal memuat PDF: '+e.message);
+    setStatus('org-status','err','✗ Failed load PDF: '+e.message);
   }
 }
 
 async function renderOrgGrid(){
   const grid=document.getElementById('org-grid');
   grid.innerHTML='';
-  document.getElementById('org-count').textContent=`${orgPages.length} halaman`;
+  document.getElementById('org-count').textContent=`${orgPages.length} pages`;
   for(let i=0;i<orgPages.length;i++){
     const{idx,rot}=orgPages[i];
     const card=document.createElement('div');
@@ -913,7 +913,7 @@ async function renderThumb(canvas,pageNum,rot){
 
 function rotOrg(i){orgPages[i].rot=(orgPages[i].rot+90)%360;renderOrgGrid();}
 function delOrg(i){
-  if(orgPages.length<=1){setStatus('org-status','err','⚠ Tidak bisa menghapus halaman terakhir.');return;}
+  if(orgPages.length<=1){setStatus('org-status','err','⚠ Cannot remove last page.');return;}
   orgPages.splice(i,1);renderOrgGrid();
 }
 function clearOrg(){
@@ -926,7 +926,7 @@ function clearOrg(){
 async function downloadOrg(){
   if(!orgBytes||!orgPages.length)return;
   const btn=document.getElementById('org-dl-btn');
-  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Memproses...';
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Processing...';
   try{
     const src=await PDFDocument.load(orgBytes);
     const out=await PDFDocument.create();
@@ -937,7 +937,7 @@ async function downloadOrg(){
       out.addPage(page);
     });
     dl(await out.save(),'organized.pdf');
-    setStatus('org-status','ok',`✓ PDF dengan ${orgPages.length} halaman berhasil diunduh!`);
+    setStatus('org-status','ok',`✓ PDF with ${orgPages.length} pages downloaded successfully!`);
   }catch(e){
     setStatus('org-status','err','✗ Gagal: '+e.message);
   }finally{
