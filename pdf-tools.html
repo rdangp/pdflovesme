@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Tools Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D1117;--surface:#161B22;--surface2:#1C2128;--surface3:#21262D;
+  --border:#30363D;--border2:#3D444D;
+  --accent:#F97316;--accent-h:#EA6F0D;--accent-dim:rgba(249,115,22,.13);
+  --text:#E6EDF3;--text2:#8B949E;--text3:#6E7681;
+  --success:#3FB950;--danger:#F85149;
+  --r:10px;--rs:6px
+}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* Header */
+header{
+  padding:14px 24px;border-bottom:1px solid var(--border);background:var(--surface);
+  display:flex;align-items:center;gap:16px;flex-shrink:0
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{
+  width:34px;height:34px;background:var(--accent);border-radius:8px;
+  display:flex;align-items:center;justify-content:center
+}
+.logo-text{font-size:17px;font-weight:700;letter-spacing:-.3px}
+.logo-badge{font-size:10px;font-weight:600;background:var(--accent-dim);color:var(--accent);padding:3px 8px;border-radius:99px;letter-spacing:.5px}
+.header-sub{font-size:13px;color:var(--text3);margin-left:auto}
+
+/* Layout */
+main{display:flex;flex:1;overflow:hidden}
+
+/* Sidebar */
+.sidebar{
+  width:215px;min-width:215px;background:var(--surface);border-right:1px solid var(--border);
+  padding:20px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto
+}
+.sidebar-section{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);padding:10px 10px 6px}
+.nav-btn{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--rs);
+  cursor:pointer;border:none;background:transparent;color:var(--text2);
+  font-family:'Outfit',sans-serif;font-size:13.5px;font-weight:500;width:100%;text-align:left;
+  transition:background .12s,color .12s
+}
+.nav-btn:hover{background:var(--surface2);color:var(--text)}
+.nav-btn.active{background:var(--accent-dim);color:var(--accent)}
+.nav-icon{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+
+/* Content */
+.content{flex:1;overflow-y:auto;padding:28px 32px;display:flex;flex-direction:column;gap:22px}
+.panel{display:none}
+.panel.active{display:flex;flex-direction:column;gap:18px}
+.panel-header{}
+.panel-title{font-size:21px;font-weight:700;letter-spacing:-.4px}
+.panel-desc{font-size:13px;color:var(--text2);margin-top:5px}
+
+/* Dropzone */
+.dropzone{
+  border:2px dashed var(--border2);border-radius:var(--r);padding:36px 24px;text-align:center;
+  cursor:pointer;transition:all .18s;background:var(--surface2);user-select:none
+}
+.dropzone:hover,.dropzone.dragover{border-color:var(--accent);background:var(--accent-dim)}
+.dz-icon{font-size:32px;margin-bottom:10px}
+.dz-title{font-size:14px;font-weight:600;margin-bottom:5px}
+.dz-sub{font-size:12px;color:var(--text3)}
+input[type=file]{display:none}
+
+/* File list */
+.file-list{display:flex;flex-direction:column;gap:7px}
+.file-item{
+  display:flex;align-items:center;gap:11px;padding:11px 14px;
+  background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border);
+  cursor:grab;transition:border-color .12s
+}
+.file-item:hover{border-color:var(--border2)}
+.file-item.dragging{opacity:.45;border-style:dashed;border-color:var(--accent)}
+.file-item.drag-over{border-color:var(--accent);background:var(--accent-dim)}
+.file-grip{color:var(--text3);font-size:13px;cursor:grab;flex-shrink:0;line-height:1}
+.file-icon{font-size:18px;flex-shrink:0}
+.file-info{flex:1;min-width:0}
+.file-name{font-family:'JetBrains Mono',monospace;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-size{font-size:11px;color:var(--text3);margin-top:1px}
+.file-order{font-size:11px;font-weight:600;color:var(--accent);min-width:18px;flex-shrink:0;text-align:right}
+.btn-remove{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;border-radius:4px;display:flex;align-items:center;transition:color .12s,background .12s;flex-shrink:0}
+.btn-remove:hover{color:var(--danger);background:rgba(248,81,73,.1)}
+
+/* Empty state */
+.empty{text-align:center;padding:24px;color:var(--text3);font-size:13px;border:1px dashed var(--border);border-radius:var(--rs)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;border:none;transition:all .12s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-h)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-ghost{background:var(--surface3);color:var(--text);border:1px solid var(--border2)}
+.btn-ghost:hover{background:var(--surface2)}
+.btn-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* Status messages */
+.status{padding:11px 15px;border-radius:var(--rs);font-size:13px;display:flex;align-items:center;gap:9px}
+.status.ok{background:rgba(63,185,80,.1);color:var(--success);border:1px solid rgba(63,185,80,.2)}
+.status.err{background:rgba(248,81,73,.1);color:var(--danger);border:1px solid rgba(248,81,73,.2)}
+.status.info{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(249,115,22,.25)}
+
+/* Info box */
+.info-box{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--rs);padding:11px 15px;font-size:13px;color:var(--text2);line-height:1.5}
+.info-box strong{color:var(--text)}
+
+/* Form */
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px}
+select,input[type=text],input[type=number]{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);
+  padding:9px 13px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13.5px;
+  outline:none;transition:border-color .12s;appearance:none;-webkit-appearance:none
+}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%238B949E' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--accent)}
+.form-hint{font-size:11.5px;color:var(--text3)}
+
+/* Image grid */
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:11px}
+.img-thumb{position:relative;background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border);overflow:hidden;aspect-ratio:3/4;cursor:grab}
+.img-thumb img{width:100%;height:100%;object-fit:contain}
+.img-del{position:absolute;top:5px;right:5px;background:rgba(13,17,23,.8);border:none;color:var(--text);border-radius:50%;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:background .12s}
+.img-del:hover{background:var(--danger)}
+.img-name{position:absolute;bottom:0;left:0;right:0;background:rgba(13,17,23,.78);padding:4px 6px;font-size:10px;color:var(--text2);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Page grid (organize) */
+.page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:14px;margin-top:4px}
+.pg-card{background:var(--surface2);border-radius:var(--rs);border:2px solid var(--border);overflow:hidden;cursor:grab;transition:border-color .15s,transform .1s;user-select:none}
+.pg-card:hover{border-color:var(--border2)}
+.pg-card.dragging{opacity:.35;border-style:dashed;border-color:var(--accent)}
+.pg-card.drag-over{border-color:var(--accent);transform:scale(1.03)}
+.pg-canvas-wrap{background:#fff;display:flex;align-items:center;justify-content:center;min-height:80px;overflow:hidden}
+.pg-canvas-wrap canvas{width:100%;height:auto;display:block;max-height:140px;object-fit:contain}
+.pg-footer{padding:5px 8px;display:flex;align-items:center;justify-content:space-between;background:var(--surface3)}
+.pg-num{font-size:11px;color:var(--text2);font-weight:600}
+.pg-actions{display:flex;gap:4px}
+.pg-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:2px;border-radius:3px;transition:color .12s;line-height:1}
+.pg-btn:hover{color:var(--text)}
+.pg-btn.del:hover{color:var(--danger)}
+
+/* Loading */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(249,115,22,.3);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-area{display:flex;align-items:center;gap:10px;padding:24px 0;color:var(--text2);font-size:13px}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600}
+.badge-accent{background:var(--accent-dim);color:var(--accent)}
+
+@media(max-width:600px){.sidebar{display:none}.content{padding:20px 16px}}
+
+/* ── LOGIN SCREEN ─────────────────────────────────────────── */
+#login-screen{
+  position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px
+}
+.login-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:40px 36px;width:100%;max-width:400px;
+  display:flex;flex-direction:column;gap:28px;
+  box-shadow:0 0 0 1px var(--border),0 24px 64px rgba(0,0,0,.5)
+}
+.login-brand{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.login-logo{
+  width:52px;height:52px;background:var(--accent);border-radius:12px;
+  display:flex;align-items:center;justify-content:center
+}
+.login-title{font-size:20px;font-weight:700;letter-spacing:-.4px}
+.login-sub{font-size:13px;color:var(--text3);margin-top:2px}
+.login-form{display:flex;flex-direction:column;gap:14px}
+.login-field{display:flex;flex-direction:column;gap:6px}
+.login-label{font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase}
+.login-input{
+  background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);
+  padding:11px 14px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;
+  outline:none;transition:border-color .15s;width:100%
+}
+.login-input:focus{border-color:var(--accent)}
+.login-input.shake{animation:shake .35s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.login-btn{
+  background:var(--accent);color:#fff;border:none;border-radius:var(--rs);
+  padding:12px;font-family:'Outfit',sans-serif;font-size:14.5px;font-weight:700;
+  cursor:pointer;transition:background .12s,opacity .12s;letter-spacing:.2px;margin-top:4px
+}
+.login-btn:hover{background:var(--accent-h)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed}
+.login-err{
+  background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.25);
+  border-radius:var(--rs);padding:10px 13px;font-size:13px;color:var(--danger);
+  display:none;align-items:center;gap:8px
+}
+.login-err.show{display:flex}
+.pw-wrap{position:relative}
+.pw-wrap .login-input{padding-right:44px}
+.pw-toggle{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--text3);cursor:pointer;
+  display:flex;align-items:center;padding:4px;border-radius:4px;
+  transition:color .12s
+}
+.pw-toggle:hover{color:var(--text)}
+.login-footer{font-size:12px;color:var(--text3);text-align:center}
+</style>
+</head>
+<body>
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-logo">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M15 2v5h5" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M9 13h6M9 17h4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="login-title">PDF Loves Me</div>
+        <div class="login-sub">Enter your credentials</div>
+      </div>
+    </div>
+
+    <div class="login-form" id="login-form">
+      <div class="login-field">
+        <label class="login-label" for="l-user">Username</label>
+        <input class="login-input" id="l-user" type="text" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('l-pass').focus()">
+      </div>
+      <div class="login-field">
+        <label class="login-label" for="l-pass">Password</label>
+        <div class="pw-wrap">
+          <input class="login-input" id="l-pass" type="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+          <button class="pw-toggle" id="pw-toggle" type="button" onclick="togglePw()" title="Tampilkan / sembunyikan password">
+            <svg id="eye-show" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
+            <svg id="eye-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="login-err" id="login-err">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span id="login-err-msg">Wrong username or password.</span>
+      </div>
+
+      <button class="login-btn" id="login-submit" onclick="doLogin()">LOGIN</button>
+    </div>
+
+    <div class="login-footer">🔒 Data is not sent to any server.</div>
+  </div>
+</div>
+
+<div class="app" id="main-app" style="display:none">
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M15 2v5h5" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M9 13h6M9 17h4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="logo-text">PDF Loves Me</span>
+    <span class="logo-badge">PRO</span>
+  </div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+    <span style="font-size:12.5px;color:var(--text3)">Logged in as</span>
+    <span id="header-user" style="font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:4px 12px;border-radius:99px"></span>
+    <button onclick="doLogout()" style="background:var(--surface3);border:1px solid var(--border2);border-radius:var(--rs);padding:6px 13px;color:var(--text2);font-family:'Outfit',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s" onmouseover="this.style.color='var(--danger)';this.style.borderColor='rgba(248,81,73,.4)'" onmouseout="this.style.color='var(--text2)';this.style.borderColor='var(--border2)'">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Sign Out
+    </button>
+  </div>
+</header>
+
+<main>
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar">
+  <div class="sidebar-section">Tools</div>
+  <button class="nav-btn active" data-panel="merge" onclick="switchPanel('merge')">
+    <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="8" height="18" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="8" height="18" rx="1.5" stroke="currentColor" stroke-width="1.8"/><path d="M10 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+    Merge PDF
+  </button>
+  <button class="nav-btn" data-panel="img2pdf" onclick="switchPanel('img2pdf')">
+    <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 16l5-5 4 4 3-2.5 6 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    Image → PDF
+  </button>
+  <button class="nav-btn" data-panel="split" onclick="switchPanel('split')">
+    <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 8h7M3 12h7M3 16h7M14 8h7M14 12h7M14 16h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+    Split PDF
+  </button>
+  <button class="nav-btn" data-panel="organize" onclick="switchPanel('organize')">
+    <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="2" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="2" y="13" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg></span>
+    Organize Pages
+  </button>
+</nav>
+
+<!-- ===== CONTENT ===== -->
+<div class="content">
+
+  <!-- ============================================================ -->
+  <!-- MERGE PDF                                                     -->
+  <!-- ============================================================ -->
+  <div class="panel active" id="panel-merge">
+    <div class="panel-header">
+      <div class="panel-title">Merge PDF</div>
+      <div class="panel-desc">Merge multiple PDF files into one document. Drag to change the order.</div>
+    </div>
+
+    <div class="dropzone" id="merge-dz" onclick="document.getElementById('merge-inp').click()">
+      <input type="file" id="merge-inp" multiple accept=".pdf,application/pdf" onchange="addMergeFiles(this.files)">
+      <div class="dz-icon">📂</div>
+      <div class="dz-title">Drag files here...</div>
+      <div class="dz-sub">Select multiple files at once • Order can be changed</div>
+    </div>
+
+    <div id="merge-files-wrap">
+      <div class="file-list" id="merge-list"></div>
+      <div class="empty" id="merge-empty">No files yet — add at least 2 PDF files</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="merge-btn" onclick="mergePDFs()" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="8" height="18" rx="1.5" stroke="#fff" stroke-width="2"/><rect x="14" y="3" width="8" height="18" rx="1.5" stroke="#fff" stroke-width="2"/><path d="M10 12h4" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        Merge &amp; Download
+      </button>
+      <button class="btn btn-ghost" onclick="clearMerge()">Delete all</button>
+    </div>
+
+    <div id="merge-status"></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- IMAGE TO PDF                                                  -->
+  <!-- ============================================================ -->
+  <div class="panel" id="panel-img2pdf">
+    <div class="panel-header">
+      <div class="panel-title">Image → PDF</div>
+      <div class="panel-desc">Konversi gambar JPG &amp; PNG menjadi satu file PDF. Setiap gambar jadi satu halaman.</div>
+    </div>
+
+    <div class="dropzone" id="img-dz" onclick="document.getElementById('img-inp').click()">
+      <input type="file" id="img-inp" multiple accept=".jpg,.jpeg,.png,image/jpeg,image/png" onchange="addImages(this.files)">
+      <div class="dz-icon">🖼️</div>
+      <div class="dz-title">Drag images here...</div>
+      <div class="dz-sub">Format: JPG, PNG • Select multiple at once</div>
+    </div>
+
+    <div id="img-preview-section" style="display:none">
+      <div class="img-grid" id="img-grid"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="img-btn" onclick="convertImages()" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M15 2v5h5" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+        Convert to PDF
+      </button>
+      <button class="btn btn-ghost" onclick="clearImages()">Delete all</button>
+    </div>
+
+    <div id="img-status"></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SPLIT PDF                                                     -->
+  <!-- ============================================================ -->
+  <div class="panel" id="panel-split">
+    <div class="panel-header">
+      <div class="panel-title">Split PDF</div>
+      <div class="panel-desc">Split one PDF file into multiple files based on pages or ranges.</div>
+    </div>
+
+    <div class="dropzone" id="split-dz" onclick="document.getElementById('split-inp').click()">
+      <input type="file" id="split-inp" accept=".pdf,application/pdf" onchange="loadSplitFile(this.files[0])">
+      <div class="dz-icon">✂️</div>
+      <div class="dz-title">Drag PDF File here...</div>
+      <div class="dz-sub">Select one PDF file you want to split</div>
+    </div>
+
+    <div id="split-file-info" style="display:none"></div>
+
+    <div id="split-controls" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Mode Split</label>
+        <select id="split-mode" onchange="onSplitModeChange()" style="max-width:380px">
+          <option value="all">Setiap halaman → file terpisah</option>
+          <option value="range">Halaman tertentu (tentukan rentang)</option>
+          <option value="every">Setiap N halaman</option>
+        </select>
+      </div>
+
+      <div id="split-range-wrap" style="display:none;margin-top:12px">
+        <div class="form-group">
+          <label class="form-label">Rentang Halaman</label>
+          <input type="text" id="split-range-val" placeholder="Contoh: 1-3, 5, 8-10" style="max-width:380px">
+          <div class="form-hint">Pisahkan dengan koma. Contoh: <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface3);padding:1px 5px;border-radius:3px">1-3,5,8-10</code> → menghasilkan 3 file terpisah</div>
+        </div>
+      </div>
+
+      <div id="split-every-wrap" style="display:none;margin-top:12px">
+        <div class="form-group">
+          <label class="form-label">Split setiap N halaman</label>
+          <input type="number" id="split-n-val" value="2" min="1" style="max-width:120px">
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-primary" id="split-btn" onclick="doSplit()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 8h7M3 12h7M3 16h7M14 8h7M14 12h7M14 16h7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          Split &amp; Download
+        </button>
+        <button class="btn btn-ghost" onclick="clearSplit()">Reset</button>
+      </div>
+    </div>
+
+    <div id="split-status"></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ORGANIZE PAGES                                                -->
+  <!-- ============================================================ -->
+  <div class="panel" id="panel-organize">
+    <div class="panel-header">
+      <div class="panel-title">Organize Pages</div>
+      <div class="panel-desc">Atur ulang urutan halaman, hapus, atau rotasi halaman PDF sesuka hati.</div>
+    </div>
+
+    <div class="dropzone" id="org-dz" onclick="document.getElementById('org-inp').click()">
+      <input type="file" id="org-inp" accept=".pdf,application/pdf" onchange="loadOrgFile(this.files[0])">
+      <div class="dz-icon">🗂️</div>
+      <div class="dz-title">Klik atau seret file PDF ke sini</div>
+      <div class="dz-sub">Halaman akan tampil sebagai thumbnail yang bisa diatur</div>
+    </div>
+
+    <div id="org-controls" style="display:none">
+      <div class="btn-row">
+        <button class="btn btn-primary" id="org-dl-btn" onclick="downloadOrg()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v13M7 11l5 5 5-5M3 21h18" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Download PDF
+        </button>
+        <button class="btn btn-ghost" onclick="clearOrg()">Reset</button>
+        <span id="org-count" style="font-size:12.5px;color:var(--text3)"></span>
+      </div>
+      <div class="info-box" style="margin-top:4px">
+        <strong>Cara penggunaan:</strong> Drag &amp; drop thumbnail untuk mengubah urutan •
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle"><path d="M1 4h22M1 12h22M1 20h22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Rotasi 90° •
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle"><path d="M3 6l18 0M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Hapus halaman
+      </div>
+      <div id="org-loading" class="loading-area" style="display:none">
+        <div class="spinner"></div>
+        Merender halaman sebagai thumbnail...
+      </div>
+      <div class="page-grid" id="org-grid"></div>
+    </div>
+
+    <div id="org-status"></div>
+  </div>
+
+</div><!-- /content -->
+</main>
+</div><!-- /app -->
+
+</div><!-- /main-app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// ─── AUTH ─────────────────────────────────────────────────────────
+const USERS={agp:'agp12345',guest1:'guest1x',guest2:'guest2x'};
+
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value;
+  const btn=document.getElementById('login-submit');
+  const err=document.getElementById('login-err');
+  const errMsg=document.getElementById('login-err-msg');
+
+  err.classList.remove('show');
+  if(!u||!p){
+    errMsg.textContent='Username dan password tidak boleh kosong.';
+    err.classList.add('show');
+    shake();return;
+  }
+  if(USERS[u]&&USERS[u]===p){
+    // Success
+    sessionStorage.setItem('pdf_user',u);
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('main-app').style.display='flex';
+    document.getElementById('header-user').textContent=u;
+    document.getElementById('l-pass').value='';
+  }else{
+    errMsg.textContent='Username atau password salah. Coba lagi.';
+    err.classList.add('show');
+    shake();
+    btn.disabled=true;
+    setTimeout(()=>btn.disabled=false,1500);
+  }
+}
+
+function shake(){
+  const inputs=[document.getElementById('l-user'),document.getElementById('l-pass')];
+  inputs.forEach(el=>{el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');});
+}
+
+function doLogout(){
+  sessionStorage.removeItem('pdf_user');
+  document.getElementById('main-app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('l-user').value='';
+  document.getElementById('l-pass').value='';
+  document.getElementById('login-err').classList.remove('show');
+}
+
+function togglePw(){
+  const inp=document.getElementById('l-pass');
+  const show=document.getElementById('eye-show');
+  const hide=document.getElementById('eye-hide');
+  if(inp.type==='password'){inp.type='text';show.style.display='none';hide.style.display='block';}
+  else{inp.type='password';show.style.display='block';hide.style.display='none';}
+}
+
+// Auto-restore session
+(function(){
+  const u=sessionStorage.getItem('pdf_user');
+  if(u&&USERS[u]){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('main-app').style.display='flex';
+    document.getElementById('header-user').textContent=u;
+  }
+})();
+
+// ─── Bootstrap ───────────────────────────────────────────────────
+const { PDFDocument, degrees } = PDFLib;
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ─── Utilities ────────────────────────────────────────────────────
+function fmt(b){
+  if(b<1024)return b+' B';
+  if(b<1048576)return(b/1024).toFixed(1)+' KB';
+  return(b/1048576).toFixed(1)+' MB';
+}
+function setStatus(id,type,html){
+  document.getElementById(id).innerHTML=`<div class="status ${type}">${html}</div>`;
+}
+function clearStatus(id){document.getElementById(id).innerHTML='';}
+function dl(bytes,name){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+  a.download=name;a.click();
+}
+
+// ─── Navigation ───────────────────────────────────────────────────
+function switchPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelector(`[data-panel="${name}"]`).classList.add('active');
+}
+
+// ─── Dropzone setup ───────────────────────────────────────────────
+function initDZ(elId,accept,cb){
+  const el=document.getElementById(elId);
+  el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('dragover');});
+  el.addEventListener('dragleave',()=>el.classList.remove('dragover'));
+  el.addEventListener('drop',e=>{
+    e.preventDefault();el.classList.remove('dragover');
+    const f=[...e.dataTransfer.files].filter(accept);
+    if(f.length)cb(f);
+  });
+}
+const isPDF=f=>f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf');
+const isImg=f=>['image/jpeg','image/png'].includes(f.type);
+
+// ══════════════════════════════════════════════════════════════════
+// MERGE PDF
+// ══════════════════════════════════════════════════════════════════
+let mFiles=[];
+initDZ('merge-dz',isPDF,files=>addMergeFiles(files));
+
+function addMergeFiles(files){
+  [...files].forEach(f=>{
+    if(!mFiles.find(x=>x.name===f.name&&x.size===f.size))mFiles.push(f);
+  });
+  renderMerge();
+  document.getElementById('merge-inp').value='';
+}
+
+let mDragSrc=null;
+function renderMerge(){
+  const list=document.getElementById('merge-list');
+  const empty=document.getElementById('merge-empty');
+  const btn=document.getElementById('merge-btn');
+  empty.style.display=mFiles.length?'none':'block';
+  btn.disabled=mFiles.length<2;
+  list.innerHTML=mFiles.map((f,i)=>`
+    <div class="file-item" draggable="true" data-i="${i}"
+      ondragstart="mDragSrc=${i};this.classList.add('dragging');event.dataTransfer.effectAllowed='move'"
+      ondragover="event.preventDefault();document.querySelectorAll('#merge-list .file-item').forEach(x=>x.classList.remove('drag-over'));if(${i}!==mDragSrc)this.classList.add('drag-over')"
+      ondrop="event.preventDefault();if(mDragSrc!==null&&mDragSrc!==${i}){const m=mFiles.splice(mDragSrc,1)[0];mFiles.splice(${i},0,m);renderMerge()}"
+      ondragend="mDragSrc=null;document.querySelectorAll('#merge-list .file-item').forEach(x=>{x.classList.remove('dragging');x.classList.remove('drag-over')})">
+      <span class="file-grip">⠿</span>
+      <span class="file-icon">📄</span>
+      <div class="file-info">
+        <div class="file-name">${f.name}</div>
+        <div class="file-size">${fmt(f.size)}</div>
+      </div>
+      <span class="file-order">#${i+1}</span>
+      <button class="btn-remove" onclick="mFiles.splice(${i},1);renderMerge()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  `).join('');
+}
+renderMerge();
+
+function clearMerge(){mFiles=[];renderMerge();clearStatus('merge-status');}
+
+async function mergePDFs(){
+  if(mFiles.length<2)return;
+  const btn=document.getElementById('merge-btn');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Menggabungkan...';
+  setStatus('merge-status','info','<div class="spinner"></div> Menggabungkan file PDF...');
+  try{
+    const merged=await PDFDocument.create();
+    for(const f of mFiles){
+      const ab=await f.arrayBuffer();
+      const src=await PDFDocument.load(ab);
+      const pages=await merged.copyPages(src,src.getPageIndices());
+      pages.forEach(p=>merged.addPage(p));
+    }
+    const bytes=await merged.save();
+    dl(bytes,'merged.pdf');
+    setStatus('merge-status','ok',`✓ Berhasil menggabungkan ${mFiles.length} file! File <strong>merged.pdf</strong> sedang diunduh.`);
+  }catch(e){
+    setStatus('merge-status','err','✗ Gagal: '+e.message);
+  }finally{
+    btn.disabled=mFiles.length<2;
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="8" height="18" rx="1.5" stroke="#fff" stroke-width="2"/><rect x="14" y="3" width="8" height="18" rx="1.5" stroke="#fff" stroke-width="2"/><path d="M10 12h4" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg> Merge &amp; Download';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// IMAGE TO PDF
+// ══════════════════════════════════════════════════════════════════
+let iFiles=[];
+initDZ('img-dz',isImg,files=>addImages(files));
+
+function addImages(files){
+  [...files].forEach(f=>{
+    if(!iFiles.find(x=>x.name===f.name&&x.size===f.size))iFiles.push(f);
+  });
+  renderImgs();
+  document.getElementById('img-inp').value='';
+}
+
+function renderImgs(){
+  const sec=document.getElementById('img-preview-section');
+  const grid=document.getElementById('img-grid');
+  const btn=document.getElementById('img-btn');
+  btn.disabled=!iFiles.length;
+  if(!iFiles.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  grid.innerHTML='';
+  iFiles.forEach((f,i)=>{
+    const url=URL.createObjectURL(f);
+    const div=document.createElement('div');
+    div.className='img-thumb';
+    div.innerHTML=`<img src="${url}" onload="URL.revokeObjectURL(this.src)" alt="">
+      <button class="img-del" onclick="iFiles.splice(${i},1);renderImgs()">✕</button>
+      <div class="img-name">${f.name}</div>`;
+    grid.appendChild(div);
+  });
+}
+
+function clearImages(){iFiles=[];renderImgs();clearStatus('img-status');}
+
+async function convertImages(){
+  if(!iFiles.length)return;
+  const btn=document.getElementById('img-btn');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Mengkonversi...';
+  setStatus('img-status','info','<div class="spinner"></div> Mengkonversi gambar menjadi PDF...');
+  try{
+    const doc=await PDFDocument.create();
+    for(const f of iFiles){
+      const ab=await f.arrayBuffer();
+      const img=f.type==='image/jpeg'?await doc.embedJpg(ab):await doc.embedPng(ab);
+      // A4 page: 595 x 842 pt, scale image to fit
+      const maxW=595,maxH=842;
+      let {width:w,height:h}=img;
+      const scale=Math.min(maxW/w,maxH/h,1);
+      w*=scale;h*=scale;
+      const page=doc.addPage([maxW,maxH]);
+      page.drawImage(img,{x:(maxW-w)/2,y:(maxH-h)/2,width:w,height:h});
+    }
+    const bytes=await doc.save();
+    dl(bytes,'images.pdf');
+    setStatus('img-status','ok',`✓ Berhasil mengkonversi ${iFiles.length} gambar menjadi PDF!`);
+  }catch(e){
+    setStatus('img-status','err','✗ Gagal: '+e.message);
+  }finally{
+    btn.disabled=!iFiles.length;
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M15 2v5h5" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg> Konversi ke PDF';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SPLIT PDF
+// ══════════════════════════════════════════════════════════════════
+let sFile=null,sTotal=0;
+initDZ('split-dz',isPDF,files=>loadSplitFile(files[0]));
+
+async function loadSplitFile(file){
+  if(!file)return;sFile=file;
+  try{
+    const ab=await file.arrayBuffer();
+    const pdf=await PDFDocument.load(ab);
+    sTotal=pdf.getPageCount();
+    document.getElementById('split-inp').value='';
+    document.getElementById('split-file-info').style.display='block';
+    document.getElementById('split-file-info').innerHTML=
+      `<div class="info-box"><strong>${file.name}</strong> — <span class="badge badge-accent">${sTotal} halaman</span> &nbsp;•&nbsp; ${fmt(file.size)}</div>`;
+    document.getElementById('split-controls').style.display='block';
+    clearStatus('split-status');
+    onSplitModeChange();
+  }catch(e){setStatus('split-status','err','✗ Gagal membaca PDF: '+e.message);}
+}
+
+function onSplitModeChange(){
+  const mode=document.getElementById('split-mode').value;
+  document.getElementById('split-range-wrap').style.display=mode==='range'?'block':'none';
+  document.getElementById('split-every-wrap').style.display=mode==='every'?'block':'none';
+}
+
+function clearSplit(){
+  sFile=null;sTotal=0;
+  document.getElementById('split-inp').value='';
+  document.getElementById('split-file-info').style.display='none';
+  document.getElementById('split-controls').style.display='none';
+  clearStatus('split-status');
+}
+
+function parseRanges(str){
+  return str.split(',').map(s=>s.trim()).filter(Boolean).map(s=>{
+    if(s.includes('-')){
+      const[a,b]=s.split('-').map(Number);
+      if(isNaN(a)||isNaN(b)||a<1||b>sTotal||a>b)throw new Error(`Rentang tidak valid: "${s}"`);
+      return{from:a-1,to:b-1};
+    }
+    const n=Number(s);
+    if(isNaN(n)||n<1||n>sTotal)throw new Error(`Nomor halaman tidak valid: "${s}"`);
+    return{from:n-1,to:n-1};
+  });
+}
+
+async function doSplit(){
+  if(!sFile)return;
+  const btn=document.getElementById('split-btn');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Memproses...';
+  setStatus('split-status','info','<div class="spinner"></div> Memecah PDF...');
+  try{
+    const ab=await sFile.arrayBuffer();
+    const mode=document.getElementById('split-mode').value;
+    let ranges=[];
+    if(mode==='all'){
+      for(let i=0;i<sTotal;i++)ranges.push({from:i,to:i});
+    }else if(mode==='range'){
+      const rv=document.getElementById('split-range-val').value.trim();
+      if(!rv)throw new Error('Masukkan rentang halaman terlebih dahulu');
+      ranges=parseRanges(rv);
+    }else{
+      const n=parseInt(document.getElementById('split-n-val').value)||1;
+      if(n<1)throw new Error('N harus ≥ 1');
+      for(let i=0;i<sTotal;i+=n)ranges.push({from:i,to:Math.min(i+n-1,sTotal-1)});
+    }
+    if(!ranges.length)throw new Error('Tidak ada halaman yang dipilih');
+    for(let k=0;k<ranges.length;k++){
+      const{from,to}=ranges[k];
+      const src=await PDFDocument.load(ab);
+      const out=await PDFDocument.create();
+      const idxs=Array.from({length:to-from+1},(_,j)=>from+j);
+      const pages=await out.copyPages(src,idxs);
+      pages.forEach(p=>out.addPage(p));
+      dl(await out.save(),ranges.length===1?'split.pdf':`split_part${k+1}.pdf`);
+      if(k<ranges.length-1)await new Promise(r=>setTimeout(r,250));
+    }
+    setStatus('split-status','ok',`✓ Berhasil membuat ${ranges.length} file PDF!`);
+  }catch(e){
+    setStatus('split-status','err','✗ Gagal: '+e.message);
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 8h7M3 12h7M3 16h7M14 8h7M14 12h7M14 16h7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg> Split &amp; Download';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ORGANIZE PAGES
+// ══════════════════════════════════════════════════════════════════
+let orgBytes=null,orgDoc=null,orgPJsDoc=null,orgPages=[],orgDragSrc=null;
+initDZ('org-dz',isPDF,files=>loadOrgFile(files[0]));
+
+async function loadOrgFile(file){
+  if(!file)return;
+  document.getElementById('org-controls').style.display='block';
+  document.getElementById('org-grid').innerHTML='';
+  document.getElementById('org-loading').style.display='flex';
+  clearStatus('org-status');
+  try{
+    orgBytes=await file.arrayBuffer();
+    orgDoc=await PDFDocument.load(orgBytes);
+    const n=orgDoc.getPageCount();
+    orgPages=Array.from({length:n},(_,i)=>({idx:i,rot:0}));
+    const uint8=new Uint8Array(orgBytes);
+    orgPJsDoc=await pdfjsLib.getDocument({data:uint8}).promise;
+    document.getElementById('org-inp').value='';
+    document.getElementById('org-loading').style.display='none';
+    await renderOrgGrid();
+  }catch(e){
+    document.getElementById('org-loading').style.display='none';
+    setStatus('org-status','err','✗ Gagal memuat PDF: '+e.message);
+  }
+}
+
+async function renderOrgGrid(){
+  const grid=document.getElementById('org-grid');
+  grid.innerHTML='';
+  document.getElementById('org-count').textContent=`${orgPages.length} halaman`;
+  for(let i=0;i<orgPages.length;i++){
+    const{idx,rot}=orgPages[i];
+    const card=document.createElement('div');
+    card.className='pg-card';
+    card.draggable=true;
+    card.dataset.i=i;
+    const wrap=document.createElement('div');
+    wrap.className='pg-canvas-wrap';
+    const canvas=document.createElement('canvas');
+    wrap.appendChild(canvas);
+    card.innerHTML=`
+      <div class="pg-footer">
+        <span class="pg-num">Hal ${i+1}</span>
+        <div class="pg-actions">
+          <button class="pg-btn" title="Rotasi 90°" onclick="rotOrg(${i})">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10A8 8 0 1014 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <button class="pg-btn del" title="Hapus halaman" onclick="delOrg(${i})">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>`;
+    card.insertBefore(wrap,card.firstChild);
+    // Drag events
+    card.addEventListener('dragstart',e=>{
+      orgDragSrc=i;card.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    card.addEventListener('dragover',e=>{
+      e.preventDefault();
+      grid.querySelectorAll('.pg-card').forEach(c=>c.classList.remove('drag-over'));
+      if(i!==orgDragSrc)card.classList.add('drag-over');
+    });
+    card.addEventListener('drop',e=>{
+      e.preventDefault();
+      if(orgDragSrc!==null&&orgDragSrc!==i){
+        const m=orgPages.splice(orgDragSrc,1)[0];
+        orgPages.splice(i,0,m);
+        renderOrgGrid();
+      }
+    });
+    card.addEventListener('dragend',()=>{
+      orgDragSrc=null;
+      grid.querySelectorAll('.pg-card').forEach(c=>{c.classList.remove('dragging');c.classList.remove('drag-over');});
+    });
+    grid.appendChild(card);
+    // Render thumbnail (async, non-blocking)
+    renderThumb(canvas,idx+1,rot);
+  }
+}
+
+async function renderThumb(canvas,pageNum,rot){
+  try{
+    const page=await orgPJsDoc.getPage(pageNum);
+    const vp=page.getViewport({scale:0.38,rotation:rot});
+    canvas.width=vp.width;canvas.height=vp.height;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,vp.width,vp.height);
+    await page.render({canvasContext:ctx,viewport:vp}).promise;
+  }catch{
+    canvas.width=90;canvas.height=110;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#21262D';ctx.fillRect(0,0,90,110);
+    ctx.fillStyle='#3D444D';ctx.font='11px sans-serif';ctx.textAlign='center';
+    ctx.fillText('Halaman '+pageNum,45,60);
+  }
+}
+
+function rotOrg(i){orgPages[i].rot=(orgPages[i].rot+90)%360;renderOrgGrid();}
+function delOrg(i){
+  if(orgPages.length<=1){setStatus('org-status','err','⚠ Tidak bisa menghapus halaman terakhir.');return;}
+  orgPages.splice(i,1);renderOrgGrid();
+}
+function clearOrg(){
+  orgBytes=null;orgDoc=null;orgPJsDoc=null;orgPages=[];
+  document.getElementById('org-controls').style.display='none';
+  document.getElementById('org-grid').innerHTML='';
+  document.getElementById('org-inp').value='';
+  clearStatus('org-status');
+}
+async function downloadOrg(){
+  if(!orgBytes||!orgPages.length)return;
+  const btn=document.getElementById('org-dl-btn');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Memproses...';
+  try{
+    const src=await PDFDocument.load(orgBytes);
+    const out=await PDFDocument.create();
+    const indices=orgPages.map(p=>p.idx);
+    const copied=await out.copyPages(src,indices);
+    copied.forEach((page,i)=>{
+      if(orgPages[i].rot!==0)page.setRotation(degrees(orgPages[i].rot));
+      out.addPage(page);
+    });
+    dl(await out.save(),'organized.pdf');
+    setStatus('org-status','ok',`✓ PDF dengan ${orgPages.length} halaman berhasil diunduh!`);
+  }catch(e){
+    setStatus('org-status','err','✗ Gagal: '+e.message);
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v13M7 11l5 5 5-5M3 21h18" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Download PDF';
+  }
+}
+</script>
+</body>
+</html>
